@@ -27,7 +27,19 @@ export async function listPublishedPosts(
   return { data: (data ?? null) as PostListRow[] | null, error };
 }
 
-export async function listMyPosts(supabase: SupabaseClient, userId: string) {
+export async function listMyPosts(supabase: SupabaseClient) {
+  // Do not trust a caller-provided user id. Always derive it from the current
+  // authenticated user to prevent accidental/unsafe impersonation patterns.
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  if (userError) return { data: null as PostListRow[] | null, error: userError };
+  const userId = userData.user?.id;
+  if (!userId) {
+    return {
+      data: null as PostListRow[] | null,
+      error: new Error("Not authenticated"),
+    };
+  }
+
   const { data, error } = await supabase
     .from("posts")
     .select("id,title,content,published,created_at")

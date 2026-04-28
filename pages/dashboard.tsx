@@ -35,7 +35,7 @@ export default function DashboardPage() {
 
       setPostsLoading(true);
       setPostsError(null);
-      const { data, error } = await listMyPosts(supabase, session.user.id);
+      const { data, error } = await listMyPosts(supabase);
       if (error) {
         if (!cancelled) {
           setPostsError(error.message);
